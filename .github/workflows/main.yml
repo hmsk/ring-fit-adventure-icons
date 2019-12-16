@@ -1,0 +1,54 @@
+# This action based on https://github.com/bomberstudios/sketchtool-action
+name: Bundle all artboards
+
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - 'ring_fit_adventure_icons.sketch'
+
+jobs:
+  assets:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+      
+    - name: Bump the workspace version
+      id: tag_version
+      uses: mathieudutour/github-tag-action@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        default_bump: patch
+
+    - name: Download & Install Sketch
+      run: |
+        curl -OL https://sketch.com/download/sketch.zip
+        unzip sketch.zip
+
+    - name: Run SketchTool
+      run: Sketch.app/Contents/Resources/sketchtool/bin/sketchtool export artboards --output=assets ringfit_icons.sketch
+
+    - name: ZIP Assets
+      run: zip -r assets.zip assets/
+
+    - name: Create a GitHub release
+      id: create_release
+      uses: actions/create-release@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag_version.outputs.new_tag }}
+        release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+        draft: "false"
+        prerelease: "false"
+
+    - name: Publish the assets file to the release
+      uses: actions/upload-release-asset@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: assets.zip
+        asset_name: assets.zip
+        asset_content_type: application/zip
