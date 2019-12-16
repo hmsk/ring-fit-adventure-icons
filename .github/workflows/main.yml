@@ -27,7 +27,7 @@ jobs:
         unzip sketch.zip
 
     - name: Run SketchTool
-      run: Sketch.app/Contents/Resources/sketchtool/bin/sketchtool export artboards --output=assets ringfit_icons.sketch
+      run: Sketch.app/Contents/Resources/sketchtool/bin/sketchtool export artboards --output=assets ring_fit_adventure_icons.sketch
 
     - name: ZIP Assets
       run: zip -r assets.zip assets/
